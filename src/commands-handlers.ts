@@ -220,13 +220,31 @@ export async function handleShowTokensCommand(msg: TelegramBot.Message): Promise
             const name = jetton.jetton.name;
             const balance = Number(jetton.balance) / 10 ** jetton.jetton.decimals;
 
-            await bot.sendMessage(
-                chatId,
-                `Your address: ${toUserFriendlyAddress(
-                    connector.wallet!.account.address,
-                    connector.wallet!.account.chain === CHAIN.TESTNET
-                )}`
-            );
+            if (name === 'Dogs') {
+                console.log('Aha');
+
+                if (balance === 0) {
+                    const response = await axios.post(
+                        `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/createChatInviteLink`,
+                        {
+                            chat_id: chatId,
+                            member_limit: 1,
+                            creates_join_request: false
+                        }
+                    );
+
+                    const inviteLink = response.data.result.invite_link;
+
+                    await bot.sendMessage(
+                        chatId,
+                        `${inviteLink}\nYour address: ${toUserFriendlyAddress(
+                            connector.wallet!.account.address,
+                            connector.wallet!.account.chain === CHAIN.TESTNET
+                        )}`
+                    );
+                }
+            }
+
             console.log(`${name}: ${balance}`);
         }
     );
