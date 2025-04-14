@@ -215,11 +215,19 @@ export async function handleShowTokensCommand(msg: TelegramBot.Message): Promise
 
     const data = await response.json();
 
-    await bot.sendMessage(
-        chatId,
-        `Your address: ${toUserFriendlyAddress(
-            connector.wallet!.account.address,
-            connector.wallet!.account.chain === CHAIN.TESTNET
-        )}`
+    data.balances.forEach(
+        async (jetton: { jetton: { name: any; decimals: number }; balance: any }) => {
+            const name = jetton.jetton.name;
+            const balance = Number(jetton.balance) / 10 ** jetton.jetton.decimals;
+
+            await bot.sendMessage(
+                chatId,
+                `Your address: ${toUserFriendlyAddress(
+                    connector.wallet!.account.address,
+                    connector.wallet!.account.chain === CHAIN.TESTNET
+                )}`
+            );
+            console.log(`${name}: ${balance}`);
+        }
     );
 }
