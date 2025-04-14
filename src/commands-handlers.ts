@@ -190,3 +190,36 @@ export async function handleShowMyWalletCommand(msg: TelegramBot.Message): Promi
         )}`
     );
 }
+export async function handleShowTokensCommand(msg: TelegramBot.Message): Promise<void> {
+    const chatId = msg.chat.id;
+
+    const connector = getConnector(chatId);
+
+    await connector.restoreConnection();
+    if (!connector.connected) {
+        await bot.sendMessage(chatId, "You didn't connect a wallet");
+        return;
+    }
+
+    const response = await fetch(
+        `https://tonapi.io/v2/accounts/${toUserFriendlyAddress(
+            connector.wallet!.account.address,
+            connector.wallet!.account.chain === CHAIN.TESTNET
+        )}/jettons`,
+        {
+            headers: {
+                Authorization: `Bearer ${process.env.TON_API}`
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    await bot.sendMessage(
+        chatId,
+        `Your address: ${toUserFriendlyAddress(
+            connector.wallet!.account.address,
+            connector.wallet!.account.chain === CHAIN.TESTNET
+        )}`
+    );
+}
